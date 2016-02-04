@@ -46,9 +46,6 @@ void loop() {
 
 void initialize_serial() {
   Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
 }
 
 boolean initialize_gprs_data() {
