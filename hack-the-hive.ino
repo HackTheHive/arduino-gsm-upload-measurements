@@ -12,11 +12,12 @@
 char SIM_CARD_PIN[] =  "";
 
 // Access Point (APN) configuration
-char GPRS_APN[]      = "";
-char GPRS_LOGIN[]    = "";
-char GPRS_PASSWORD[] = "";
+char GPRS_APN[]      = "Eseye.com";
+char GPRS_LOGIN[]    = "foo";
+char GPRS_PASSWORD[] = "foo";
 
-const char SERVER_IP[] = "";
+const char SERVER_IP[] = "217.148.42.116";
+const char SECRET_DEVICE_ID[] = "<replace with this the secret!>";
 const int SERVER_PORT = 11234;
 const int SENSOR_1_PIN = 0;
 const int SENSOR_2_PIN = 0;
@@ -131,7 +132,10 @@ boolean upload_measurements(const Measurements& measurements)
     if (IP_SESSION.connect(SERVER_IP, SERVER_PORT)) {
       Serial.println("OK, connected. Sending measurements...");
 
-      String message = String("temperature_1=")
+      String message = String("version=1&secret_device_id=")
+                     + String(SECRET_DEVICE_ID)
+                     + String("&")
+                     + String("temperature_1=")
                      + String(measurements.temperature_1)
                      + String("&")
                      + String("humidity_1=")
