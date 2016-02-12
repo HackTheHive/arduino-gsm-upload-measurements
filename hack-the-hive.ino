@@ -1,11 +1,13 @@
  /*
-  * Requires Low-Power library for sleeping
-  * Homepage: https://github.com/rocketscream/Low-Power
-  * Download: https://github.com/rocketscream/Low-Power/archive/master.zip
+  * Dependencies:
+  *
+  * - Low-Power v1.4.0: https://github.com/rocketscream/Low-Power
+  * - DHT-sensor-library v1.2.3: https://github.com/adafruit/DHT-sensor-library
   */
 
 #include <GSM.h>
 #include <LowPower.h>
+#include <DHT.h>
 
 char SIM_CARD_PIN[] =  "";
 
@@ -16,21 +18,30 @@ char GPRS_PASSWORD[] = "";
 
 const char SERVER_IP[] = "";
 const int SERVER_PORT = 11234;
+const int SENSOR_1_PIN = 0;
+const int SENSOR_2_PIN = 0;
+
 
 GSM GSM_MODEM;         // handles the radio modem
 GPRS GPRS_CONTROLLER;  // for getting a connection to the Internet
 GSMClient IP_SESSION;  // for connecting & sending data over TCP/IP
 
+DHT DHT_SENSOR_1(SENSOR_1_PIN, DHT22);
+DHT DHT_SENSOR_2(SENSOR_2_PIN, DHT22);
+
 
 struct Measurements {
-  int temperature_1;
-  int temperature_2;
+  float temperature_1;
+  float humidity_1;
+  float temperature_2;
+  float humidity_2;
 };
 
 
 void setup() {
   initialize_serial();
   initialize_gprs_data();
+  initialize_sensors();
 }
 
 void loop() {
@@ -80,11 +91,21 @@ boolean initialize_gprs_data() {
   return connected;
 }
 
+void initialize_sensors() {
+  DHT_SENSOR_1.begin();
+  DHT_SENSOR_2.begin();
+}
+
 
 
 Measurements get_measurements() {
   Serial.println("Measuring temperature...");
-  return (Measurements){123, 456}; // TODO
+  return (Measurements){
+    DHT_SENSOR_1.readTemperature(),
+    DHT_SENSOR_1.readHumidity(),
+    DHT_SENSOR_2.readTemperature(),
+    DHT_SENSOR_2.readHumidity()
+  };
 }
 
 
@@ -113,8 +134,14 @@ boolean upload_measurements(const Measurements& measurements)
       String message = String("temperature_1=")
                      + String(measurements.temperature_1)
                      + String("&")
+                     + String("humidity_1=")
+                     + String(measurements.humidity_1)
+                     + String("&")
                      + String("temperature_2=")
-                     + String(measurements.temperature_2);
+                     + String(measurements.temperature_2)
+                     + String("&")
+                     + String("humidity_2=")
+                     + String(measurements.humidity_2);
       IP_SESSION.println(message.c_str());
       IP_SESSION.stop();
 
